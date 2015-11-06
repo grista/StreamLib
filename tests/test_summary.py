@@ -79,3 +79,16 @@ class Test_F2(object):
         exact_f2 = sum(map(lambda x: x**2, weights))
 
         assert abs(new_f2.estimate() - exact_f2) <=  exact_f2 / math.sqrt(w)
+
+from streamlib import MG
+class Test_MG(object):
+
+    def test_estimate(self):
+        a = MG(k=2)
+        ls = [2,1,1,1]
+        a.processBatch(ls)
+        assert a.estimate(1) == 2
+        assert a.estimate(2) == 0
+
+
+
