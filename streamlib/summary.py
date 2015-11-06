@@ -493,6 +493,55 @@ class CountMedian(CountMin):
                           for i in xrange(self._mu)]
         return utils.median(all_estimators)
 
+class MG(Sketch):
+    """
+    Implementation of MG Sketch algorithm. 
+    """
+    def __init__(self, k):
+        """
+        Create new instance. 
+        :param k: the number of distinct elements in the datastream
+        """
+        self.A = {}
+        self.k = k
+
+    def processBatch(self,dataStream):
+        """
+        Summarize the given data stream.
+
+        :param dataStream: any iterable object with hashable elements. 
+                           e.g. a list of integers.
+        """
+        for a in dataStream:
+            self.processItem(a)
+
+    def processItem(self, item):
+        """
+        Summarize the given data stream, but only process one
+        item.
+
+        :param item: hashable object to be processed
+                           e.g. an integer
+        """
+        if item in self.A.keys():
+            self.A[item] += 1 
+        elif len(self.A.keys()) < self.k - 1:
+            self.A[item] = 1
+        else:
+            for l in self.A.keys():
+                self.A[l] -= 1
+                if self.A[l] == 0:
+                    del self.A[l]
+
+    def estimate(self, a):
+        """
+        Provides an estimate of the amount of times a token occurs. 
+        :param a: A query 'a' where the value is to be returned if a is in the query.
+        """
+        if a in self.A.keys():
+            return self.A[a]
+        else:
+            return 0
 
             
         
