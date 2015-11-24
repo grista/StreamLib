@@ -14,7 +14,14 @@ def mean(numbers):
     else:
         return sum(numbers) / len(numbers)
 
-
+#Counts number of trailing zeros in numbers 
+def zeros(numbers):
+    if numbers == 0:
+        return 32 #Assumes 32 bit integer input
+    p = 0 #integer p is initialized to 0 but while loop ensures p > 0.
+    while (numbers >> p) & 1 == 0:
+        p += 1
+    return p 
 
 from functools import wraps
 

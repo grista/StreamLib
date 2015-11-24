@@ -73,7 +73,6 @@ class Test_F2(object):
         weights = [5, 1, 1, 6]
         f2.processBatch(zip(items, weights), True)
         new_f2 = f2.merge(f2.reproduce())
-
         #    items.extend(items)
         weights = map(lambda x: x * 2, weights)
         exact_f2 = sum(map(lambda x: x**2, weights))
@@ -90,5 +89,24 @@ class Test_MG(object):
         assert a.estimate(1) == 2
         assert a.estimate(2) == 0
 
+from streamlib import DistinctElement
+class Test_DistinctElement(object):
 
+    def test(self):
+        a = DistinctElement(w=7, mu=7)
+        ls = [1,1,1,2,1,1,1]
+        value = a.processBatch(ls)
+        print(a.sketch)
+        print(a.hashes)
+        print(a.hash)
+        assert value == 2 
+
+from streamlib import BJKST
+class Test_BJKST(object):
+
+    def test(self):
+        a = BJKST(w=4, mu=4)
+        ls = [1,2,2,2]
+        value = a.processBatch(ls)
+        assert value == 2
 

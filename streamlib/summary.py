@@ -8,9 +8,7 @@ from abc import ABCMeta, abstractmethod
 from random import randint
 from streamlib.utils import doc_inherit
 import streamlib.utils as utils
-
-
-
+import math
 
 
 
@@ -50,9 +48,6 @@ class Sketch(object):
     @abstractmethod
     def __add__(self, other):
         return self.merge(other)
-
-
-
 
 
 class F2(Sketch):
@@ -543,7 +538,131 @@ class MG(Sketch):
         else:
             return 0
 
-            
+
+
+# class DistinctElement(Sketch):
+#     """
+#     Computes an epsilon-delta approximation of the distinct elements that 
+#     appear in the data stream. 
+#     """
+
+#     def __init__(self, delta = 0.01):
+#         """
+#         Create a new instance.
+
+#         :param z: Holds the maximum value of zeroes h(j)
+#         :type: int
+
+#         """
+
+#         self.z = 0 
+#         self.h = MurmurHash()
+#         self.n_hash = int(math.log(1. / delta))
+
+#         """
+#         Summarize the given data stream.
+
+#         :param dataStream: any iterable object with hashable elements. 
+#                            e.g. a list of integers.
+#         """
+    
+#     def processBatch(self, dataStream):
+#         res = [0 for i in range(self.n_hash)]
+#         for item in dataStream:
+#             k = dataStream.index(item)
+#             self.processItem(item)
+#             res[k] = 2**(self.z + 0.5)
+#         return utils.median(res)
+
+#         """
+#         Summarize the given data stream, but only process one
+#         item.
+
+#         :param item: hashable object to be processed
+#                            e.g. an integer
+#         """
+#     def processItem(self,item):
+#         hs = utils.zeros(self.h.hash(item))
+#         if hs >= self.z:
+#             self.z = hs
+
+class DistinctElement(Sketch):
+
+    def __init__(self,w=20, mu=5, typecode = 'i'):
+        self.w = w
+        self.mu = mu
+        self.sketch = [array(typecode, [0] * w) for i in xrange(mu)]
+        self.hashes = [MurmurHash() for i in xrange(mu)]
+        self.hash = hash(self)
+
+    def processBatch(self, dataStream):
+        for item in dataStream:
+            self.processItem(item)
+
+    def processItem(self,item):
+        for i in xrange(self.mu):
+            hs = utils.zeros(self.hashes[i].hash(item) % self.w)
+            if hs >= self.sketch[i]:
+                self.sketch[i] = hs
+
+    def estimate(self):
+        return utils.median([utils.mean(map(lambda z: 2**(z+0.5), self.sketch[i])) for i in xrange(self.mu)])
+
+
+# class BJKST(Sketch):
+
+#     def __init__(self, thresh):
+#         self.h = MurmurHash()
+#         self.g = MurmurHash()
+#         self.thresh = .01       
+#         self.z = 0 
+#         self.B = {}
+    
+#     def processBatch(self, dataStream):
+#          for item in dataStream:
+#              self.processItem(item)
+
+#     def processItem(self, item):
+#         hs = utils.zeros(self.h.hash(item))
+#         if hs >= self.z:
+#             self.B[self.g.hash(item)] = hs
+#             while(len(self.B) >= 1 / self.thresh):
+#                 self.z += 1
+#                 self.B = {k:v for k, v in self.B.items() if v >= self.z}
+
+#     def estimate(self):
+#         return len(self.B)*2**z
+
+class BJKST(Sketch):
+
+    def __init__(self, w=20, mu=5, typecode ='i'):
+        self.w = w 
+        self.mu = mu
+        self.B = {}
+        self.sketch = [array(typecode, [0]*w) for i in xrange(mu)]
+        self.h_hashes = [MurmurHash() for i in xrange(mu)]
+        self.g_hashes = [MurmurHash() for i in xrange (mu)]
+        self.hash = hash(self)
+
+    def processBatch(self,dataStream):
+        for item in dataStream:
+            self.processItem(item)
+
+    def processItem(self, item):
+        for i in xrange (self.mu):
+            hs = utils.zeros(self.h_hashes[i].hash(item) % self.w)
+            if hs >= self.sketch[i]:
+                self.B[self.g_hashes[i].hash(item)] = hs #Need to figure out how to hash g within specified range
+                while (len(self.B) >= 1 / 0.01): #Placeholder value for now. 
+                    self.sketch[i] += 1
+                    self.B = {k:v for k, v in self.B.items() if v >= self.sketch[i]}
+
+    def estimate(self):
+        return utils.median([utils.mean(map(lambda z: len(self.B)*2**z, self.sketch[i])) for i in xrange(self.mu)])
+
         
+        
+
+
 
 
