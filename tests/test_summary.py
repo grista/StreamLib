@@ -92,21 +92,29 @@ class Test_MG(object):
 from streamlib import DistinctElement
 class Test_DistinctElement(object):
 
-    def test(self):
-        a = DistinctElement(w=7, mu=7)
+    def test2(self):
         ls = [1,1,1,2,1,1,1]
-        value = a.processBatch(ls)
-        print(a.sketch)
-        print(a.hashes)
-        print(a.hash)
-        assert value == 2 
+        a = DistinctElement(n=len(ls), mu=100)
+        answer=len(list(set(ls)))
+        a.processBatch(ls)
+        value=a.estimate()
+        assert value < 1.5*answer
+        assert value > answer/1.5
+    def test6(self):
+        ls=[1,2,3,4,5,6]
+        a = DistinctElement(n=len(ls), mu=100)
+        answer=len(list(set(ls)))
+        a.processBatch(ls)
+        value=a.estimate()
+        assert value < 1.5*answer
+        assert value > answer/1.5
 
-from streamlib import BJKST
-class Test_BJKST(object):
-
-    def test(self):
-        a = BJKST(w=4, mu=4)
-        ls = [1,2,2,2]
-        value = a.processBatch(ls)
-        assert value == 2
+# from streamlib import BJKST
+# class Test_BJKST(object):
+#
+#     def test(self):
+#         a = BJKST(w=4, mu=4)
+#         ls = [1,2,2,2]
+#         value = a.processBatch(ls)
+#         assert value == 2
 

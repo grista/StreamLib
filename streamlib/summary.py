@@ -588,10 +588,12 @@ class MG(Sketch):
 
 class DistinctElement(Sketch):
 
-    def __init__(self,w=20, mu=5, typecode = 'i'):
-        self.w = w
+    def __init__(self,n=20, mu=5, typecode = 'i'):
+        self.w = int(math.log(n)+1) # w is number buckets of hash-zerosed values, then co-domain of the hash function is 2**w
+        self.n = n # co-domain of hash functions
         self.mu = mu
-        self.sketch = [array(typecode, [0] * w) for i in xrange(mu)]
+        self.sketch = [0 for i in xrange(mu)]
+        # [array(typecode, [0] * w) for i in xrange(mu)] for generalizing to be linear sketch with buckets
         self.hashes = [MurmurHash() for i in xrange(mu)]
         self.hash = hash(self)
 
@@ -601,12 +603,13 @@ class DistinctElement(Sketch):
 
     def processItem(self,item):
         for i in xrange(self.mu):
-            hs = utils.zeros(self.hashes[i].hash(item) % self.w)
-            if hs >= self.sketch[i]:
+            hs = utils.zeros(self.hashes[i].hash(item) % self.n)
+            if hs > self.sketch[i]: # self.sketch[i][hs]+=1 for buckets version
                 self.sketch[i] = hs
 
     def estimate(self):
-        return utils.median([utils.mean(map(lambda z: 2**(z+0.5), self.sketch[i])) for i in xrange(self.mu)])
+        return utils.median([2**(self.sketch[i]+0.5) for i in xrange(self.mu)])
+#     return utils.median([utils.mean(map(lambda z: 2**(z+0.5), self.sketch[i])) for i in xrange(self.mu)])
 
 
 # class BJKST(Sketch):
