@@ -109,12 +109,13 @@ class Test_DistinctElement(object):
         assert value < 1.5*answer
         assert value > answer/1.5
 
-# from streamlib import BJKST
-# class Test_BJKST(object):
-#
-#     def test(self):
-#         a = BJKST(w=4, mu=4)
-#         ls = [1,2,2,2]
-#         value = a.processBatch(ls)
-#         assert value == 2
+from streamlib import BJKST
+class Test_BJKST(object):
+
+    def test(self):
+        ls = [1,2,2,2]
+        a = BJKST(n=len(ls), mu=100, c=1, eps=.01, b=1)
+        a.processBatch(ls)
+        value = a.estimate()
+        assert value == 2
 
